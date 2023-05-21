@@ -11,7 +11,14 @@ import os
 import sys
 import re
 
+runningInGoogleColab = False
+
 ## Import my local files
+if runningInGoogleColab == True:
+  print(os.getcwd())
+  os.chdir("NoGambleNoFuture")
+  print(os.getcwd())
+
 from Strategy_Setup.Strategy_Setup         import *
 from Account_Info_Setup import *
 
