@@ -40,7 +40,7 @@ def deciding_to_make_trades_based_on_updated_stateMap_correlated_moves_only(
       cur_state_map, 
       list_of_time_frames_to_trade_on,
       isDebug = False,
-      isLiveTrading = False,
+      isLiveTrading = True, #this arguement helps time stamp when we decided to make a trade
       ):
   
   decidedToMakeTrade = False #Return this to save time down the road
@@ -105,7 +105,11 @@ def deciding_to_make_trades_based_on_updated_stateMap_correlated_moves_only(
       if count >= 3: 
           d['trades_to_enter_singal']=  trades_to_make #TODO update this arguement through optimized values
           decidedToMakeTrade =True
-          if isLiveTrading: print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!Should be entering a trade!!!!!!!!")
+          if isLiveTrading: 
+              frameinfo = getframeinfo(currentframe())
+              print(frameinfo.filename, frameinfo.lineno
+                    , "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!Should be entering a trade!!!!!!!!\nBased on this info: " ,
+                    trades_to_make)
       result_keyTime_valueDictOfTrades[time] = d
     
   return (result_keyTime_valueDictOfTrades, decidedToMakeTrade, exitSignal)
