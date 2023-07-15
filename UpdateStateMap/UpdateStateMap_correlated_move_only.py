@@ -42,24 +42,43 @@ def update_state_map_from_new_pandas_info(
         #sleep(60)
        
     #print("keys, should be", list(dict_of_new_pandas_result.keys()))
-    for time, dict_of_currenC_to_inner_state in stateMap.items():
+
+    #So we are iterating through the statemaps
+    #By time first, but they are broken down by
+    #time, then currencies in the time
+    #I am realizing that I should have the statemap and pandas standardized to be the same thing
+    #So I am not getting weird key errors
+
+
+    #print("dict_of_new_pandas_result keys:", list(dict_of_new_pandas_result.keys()), "\ndict_of_new_pandas_result[aKey] keys:" , list(dict_of_new_pandas_result[list(dict_of_new_pandas_result.keys())[0]].keys())  )
+    #print("stateMap keys:", list(stateMap.keys()), "\nstateMap[aKey] keys:" , list(stateMap[list(stateMap.keys())[0]].keys())  )
+
+    for time_, dict_of_currenC_to_inner_state in stateMap.items():
         for currenC, inner_state_map in dict_of_currenC_to_inner_state.items():
-            #dict_of_new_pandas_result = dict_of_new_pandas_result_.tail(1)
-            if  (currenC in lsOfCurrencues) :
-                #TODO This logic seems to be very flawed
-                if not isCsv:
-                    if isDebug: print(dict_of_new_pandas_result.keys())
-                    #WHAT THE FUCK LOGIC #TODO # dict_of_new_pandas_result[currenC].tail(1).shape[0] > 1 will always be false
-                    if  shouldBeOneRow and dict_of_new_pandas_result[currenC].tail(1).shape[0] > 1: print("ERRRRRRRRRRRR")
-                    if shouldBeOneRow:  one_row_pdf = dict_of_new_pandas_result[currenC].tail(1)
-                    else : one_row_pdf = dict_of_new_pandas_result[currenC]
-                elif isCsv: 
+
+            #Going to expeirment with commenting this out, I think it was a super simple patch
+            #for csv files, but I think I should do a more proper fix,
+            #now that I have difference strategies using this same function
+
+            if isDebug:     print("What currenC in list(dict_of_new_pandas_result[time_].keys())", currenC in list(dict_of_new_pandas_result[time_].keys()), list(dict_of_new_pandas_result[time_].keys()), currenC)
+            if  (currenC in lsOfCurrencues) and currenC in list(dict_of_new_pandas_result[time_].keys()): #TODO why the fuck is this here? #TODO This logic seems to be very flawed
+
+                if isCsv: 
                     #TODO throw an error on this
                     #print("index", indexxxxxxxxx)
                     one_row_pdf = (dict_of_new_pandas_result[currenC]).iloc[[indexxxxxxxxx]]
                     if isDebug :
                         print(indexxxxxxxxx, one_row_pdf)
                         print()
+                elif not isCsv:
+                    if isDebug: print(dict_of_new_pandas_result.keys())
+                    #WHAT THE FUCK LOGIC #TODO # dict_of_new_pandas_result[currenC].tail(1).shape[0] > 1 will always be false
+                    if  shouldBeOneRow and dict_of_new_pandas_result[time_][currenC].tail(1).shape[0] > 1: print("ERRRRRRRRRRRR")
+                    if shouldBeOneRow:  one_row_pdf = dict_of_new_pandas_result[time_][currenC].tail(1)
+                    else : 
+                        print("[time_], [currenC]", [time_], [currenC])
+                        one_row_pdf = dict_of_new_pandas_result[time_][currenC]
+                
                 for index, row in one_row_pdf.iterrows():
                     if isDebug:
                         #if not str(row['timeOnly']) in  inner_state_map['timesToCheckForTrade'] : 
@@ -78,7 +97,7 @@ def update_state_map_from_new_pandas_info(
                     #Also how would this time arguement get used when looking to optimize multiuple values at a time?
                     timeToUse = row['timeOnly'] if isCsv else row['time'] 
                     
-                    if str(timeToUse) in  inner_state_map['timesToCheckForTrade'] :
+                    if str(timeToUse) in inner_state_map['timesToCheckForTrade'] :
                         
                         if isDebug: print("Do I get here in state_map_update, where I am updating a time I am looking to trade")
                         bar_candles_or_heikin_ankiki =  ('heikin_ashi_open', 'heikin_ashi_close') if True else ('open', 'close') #Change this in the future
@@ -108,5 +127,5 @@ def update_state_map_from_new_pandas_info(
                 # Update/set Inner stateMap
                 dict_of_currenC_to_inner_state[currenC] = inner_state_map
         # Update/set map of times to currencies_inner_Statemapos
-        if (currenC in lsOfCurrencues) : stateMap[time] = dict_of_currenC_to_inner_state
+        if (currenC in lsOfCurrencues) : stateMap[time_] = dict_of_currenC_to_inner_state
     return (stateMap, indexxxxxxxxx)

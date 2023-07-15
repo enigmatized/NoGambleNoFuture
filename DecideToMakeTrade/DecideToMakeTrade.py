@@ -15,7 +15,7 @@ import os
 import re
 from datetime import datetime, timedelta, time
 from inspect import currentframe, getframeinfo
-
+import logging
 
 
 #This should return a tuple with
@@ -29,7 +29,7 @@ from inspect import currentframe, getframeinfo
 #Where the trading signal is also based on a "risk manager algo"
 #Where they might work together
 #I think for now, similiar to above is okay?
-#Maybe I am wondering if each strategy should have a stateMap for trades.
+#Maybe, I am wondering if each strategy should have a stateMap for trades.
 #I actuall think that is a more ideal idea
 
 #Note for this trading strategy the stateMap looks like
@@ -37,6 +37,7 @@ from inspect import currentframe, getframeinfo
 #ANd I want the signal to be accross all pairs
 #So 
 def deciding_to_make_trades_based_on_updated_stateMap_correlated_moves_only(
+      log,
       cur_state_map, 
       list_of_time_frames_to_trade_on,
       isDebug = False,
@@ -110,6 +111,7 @@ def deciding_to_make_trades_based_on_updated_stateMap_correlated_moves_only(
               print(frameinfo.filename, frameinfo.lineno
                     , "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!Should be entering a trade!!!!!!!!\nBased on this info: " ,
                     trades_to_make)
+          log.info(" count >= 3, so we are going to make these trades: " + str(trades_to_make))
       result_keyTime_valueDictOfTrades[time] = d
     
   return (result_keyTime_valueDictOfTrades, decidedToMakeTrade, exitSignal)

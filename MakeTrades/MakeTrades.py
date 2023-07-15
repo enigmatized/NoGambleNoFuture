@@ -57,7 +57,12 @@ def make_orders_for_correlated_movers_only_strategy(
             bearerOanada,
             accountNumOanda
             )
-        amountToKnowLater = 1 if dirrection == "green" else -1
+        print("WHAT THE FUCK IS DIRECTION", dirrection, "dirrection == green", dirrection == "green")
+        amountToKnowLater = 1 if dirrection == "green" else -1 #This is always returning a -1, which is weird?
+        #So there might be two things are happennig
+        #That we are updating the statemap more often then I realize?
+        #Because we shouldn't be getting here that often
+        #Also wtf is direction?!
         logging_result_from_trade_made= {
                       'json_response_if_api_call': a,
                       'wasASuccesfulOrder': b,
@@ -101,6 +106,7 @@ def make_market_orders_for_correlated_assets(
 
 
     print("about to place an order", "direction:", dirrection, "currency", currency, "amount", amount)
+       
     units         = "1" if dirrection == "green" else "-1"
     data = {"order": {
             "units": units,
@@ -141,7 +147,8 @@ def make_market_orders_for_correlated_assets(
 
 
 
-
+#THIS is old
+#TODO throw away
 
 def make_orders_(price, optmizedStopLossValue, dirrection, currency = "EUR_USD", amount = "1"): #TODO make this function take arguements for different instruments
                    #TODO function defintion of return type

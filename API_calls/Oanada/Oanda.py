@@ -24,3 +24,18 @@ def getCandles_fromOanada(currency, count = "3", bearerToken = None, accountNum 
     except Exception as err:
         print(f'Other error occurred  in function getCandles_fromOanada: {err}')
     return ("", False)
+
+
+def get_orderbook_from_Oanada(currency, bearerToken = None, accountNum = None):
+    try:
+        r = requests.get('https://api-fxtrade.oanda.com/v3/instruments/'+currency +'/orderBook',
+            headers= { 'Content-Type': 'application/json','Authorization': 'Bearer ' + bearerToken}
+            )
+        r.raise_for_status()
+        return (r.json(), True)
+    except HTTPError as http_err:
+        print(f'HTTP error occurred: {http_err}')
+        print(http_err.response.text)
+    except Exception as err:
+        print(f'Other error occurred  in function getCandles_fromOanada: {err}')
+    return ("", False)

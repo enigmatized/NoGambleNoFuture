@@ -10,90 +10,146 @@ from   time import sleep
 import os
 import sys
 import re
+import logging
 
-runningInGoogleColab = False
+### Not sure if I am using the below imports
+from pandas_datareader import data
+import mplfinance as mpf
+
+
 
 ## Import my local files
-if runningInGoogleColab == True:
+runningInGoogleColab = False
+if runningInGoogleColab:
   print(os.getcwd())
   os.chdir("NoGambleNoFuture")
   print(os.getcwd())
 
-from Strategy_Setup.Strategy_Setup         import *
-from Account_Info_Setup import *
+from Util.LoggingHelpers.LoggingHelper                       import *
+from Strategy_Setup.Strategy_Setup                           import *
+from Account_Info_Setup                                      import *
 
-from Step1InitDf.InitDf_only_correlated_trade_at_once import *
+from Step1InitDf.InitDf_only_correlated_trade_at_once        import *
+from Util.Step12PrintOutResults.Step12PrintOutResults        import printResults
 
+from API_calls                                               import *
 
-from Step12PrintOutResults.Step12PrintOutResults import printResults
+from InitStateMap.InitStateMap_for_correlated_excution       import *
+from UpdatePandasDf.UpdatePandasDf_currencies_move_together  import *
+from UpdateStateMap.UpdateStateMap_correlated_move_only      import *
 
+from DecideToMakeTrade.DecideToMakeTrade                     import *
+from MakeTrades.MakeTrades                                   import *
+from ProccessTradesMade.ProccessTradesMade                   import *
+from ExitTrades.ExitTrades                                   import *
 
-
-from API_calls import *
-from InitStateMap.InitStateMap_for_correlated_excution import *
-from UpdatePandasDf.UpdatePandasDf_currencies_move_together import *
-from UpdateStateMap.UpdateStateMap_correlated_move_only import *
-
-from DecideToMakeTrade.DecideToMakeTrade   import *
-from MakeTrades.MakeTrades                 import *
-from ProccessTradesMade.ProccessTradesMade import *
-from ExitTrades.ExitTrades                 import *
-
-
+from Dashboard.Create_candle_chart                           import *
 
 
+"""
+Main in broken into three sections
 
+1. Init the basic variables, like debug mode, production mode, 
+2. Init data structure that holds state of strategy
+3. In a forever loop that updates every _ seconds
 
-#Should pass these values around so it is easier to 
-#Pass to a google colab
-(bearerTokenOanda, accountNumOanda) = getBearAndAccount()
-
-secretInfo = {"bearerTokenOanda" : bearerTokenOanda, "accountNumOanda": accountNumOanda }
-
-index____               = 300
-
-
-#TODO clean this up, I have too many arguements here
-useAPI_for_data_and_make_trades_on_exchange_ = False
-sanityCheck_only_print_a_few_loops           = [True, 0]
-
-#Remove these two, you do not need both
-makeRealMoneyTrades         = False
-makeOrders                  = True     #What does this do?
-
-useAPIsToPopulatePandasInfo        = True
-productoinMode                     = True   #I should have three modes, 
-                                            #1. Live trading, 
-                                            # 2. demo-trades
-                                            # 3. Csv file back test
-                                            #The ultimate model would do back testing
-                                            #Simulation modelling
-isLiveTrading                      = productoinMode
-
-
-debugMode                          = False
-shouldSleepForDebugPurposes        = True #This just sleeps in certain places, Only in places in code if debugmode is on
-
-isCsv                   = False
-
-debugMode               = False
-isDebug                 = debugMode
-
-
-#TODO set this up so it can correctly import files and libraries more seemlessly
-runningInANoteBook =    False
-
-strategies  = makeStrategies()
+"""
 
 
 def main():
-    print("Holly shit there is a lot going on here.")
-    print("There is a lot to improve here")
-    print("Weekend....")
 
 
-if __name__ == "__main__":
-    main()
+
+    """
+    Setup logging
+    We have logging for 
+    a. deciding to make trades
+    b. trades
+    c. attempting
+    d. everything logger  
+    """
+    # logging.basicConfig(filename='example2.log',
+                        # format='%(asctime)s : %(levelname)s : %(message)s', 
+                        # encoding='utf-8', 
+                        # level=logging.DEBUG)
+    # Create a logs directory if it doesn't exist
+    log_folder = 'Util/Logs'
+    if not os.path.exists(log_folder):os.makedirs(log_folder)
+    # Create loggers
+    deciding_logger = logging.getLogger('deciding_logger')
+    trades_logger = logging.getLogger('trades_logger')
+    attempting_logger = logging.getLogger('attempting_logger')
+    everything_logger = logging.getLogger('everything_logger')
+
+    # Configure loggers
+    log_format = '%(asctime)s - %(levelname)s - %(message)s'
+    log_level = logging.INFO
+    
+    # Create file handlers for each logger
+    deciding_handler = logging.FileHandler(os.path.join(log_folder, 'deciding.log'))
+    trades_handler = logging.FileHandler(os.path.join(log_folder, 'trades.log'))
+    attempting_handler = logging.FileHandler(os.path.join(log_folder, 'attempting.log'))
+    everything_handler = logging.FileHandler(os.path.join(log_folder, 'everything.log'))
+    
+    # Set the log format for each handler
+    deciding_handler.setFormatter(logging.Formatter(log_format))
+    trades_handler.setFormatter(logging.Formatter(log_format))
+    attempting_handler.setFormatter(logging.Formatter(log_format))
+    everything_handler.setFormatter(logging.Formatter(log_format))
+    
+    # Add handlers to the respective loggers
+    deciding_logger.addHandler(deciding_handler)
+    trades_logger.addHandler(trades_handler)
+    attempting_logger.addHandler(attempting_handler)
+    everything_logger.addHandler(everything_handler)
+    
+    # Set the log level for everything logger
+    everything_logger.setLevel(logging.DEBUG)
+    
+    # Now you can use the loggers in your trading bot
+    deciding_logger.info('Deciding to make trades...')
+    attempting_logger.info('Attempting to perform trades...')
+    trades_logger.info('In-trade updates...')
+    everything_logger.info('Logging everything...')
+
+
+
+    """Bearer Token setup"""
+    (bearerTokenOanda, accountNumOanda) = getBearAndAccount() #Should pass these values around so it is easier to  #Pass to a google colab
+    secretInfo = {"bearerTokenOanda" : bearerTokenOanda, "accountNumOanda": accountNumOanda }
+
+    index____               = 300 #Only used for back testing with csv files
+
+
+    #TODO clean this up, I have too many arguements here
+    useAPI_for_data_and_make_trades_on_exchange_ = False
+    sanityCheck_only_print_a_few_loops           = [True, 0]
+
+    #Remove these two, you do not need both
+    makeRealMoneyTrades         = False
+    makeOrders                  = True     #What does this do?
+
+    useAPIsToPopulatePandasInfo        = True
+    productoinMode                     = True   
+    isLiveTrading                      = productoinMode
+
+
+    debugMode                          = False
+    shouldSleepForDebugPurposes        = True #This just sleeps in certain places, Only in places in code if debugmode is on
+
+    isCsv                   = False
+
+    debugMode               = False
+    isDebug                 = debugMode
+
+
+    #TODO set this up so it can correctly import files and libraries more seemlessly
+    runningInANoteBook =    False
+    print("Initial variable setup complete")
+    strategies  = makeStrategies()
+    print("strategy setup compltee")
+    logging.info('Initial variable setup complete')
+
 
 
     #TODO Move the init logic outside here
@@ -102,11 +158,11 @@ if __name__ == "__main__":
     #  strategies[k]
     for strategy in strategies.keys():
       strategies[strategy]["pandas_df"] = strategies[strategy]["init_pandasDf"](
-        productionMod = useAPIsToPopulatePandasInfo,
-        isCsv         = isCsv,
-        currencys_    = strategies[strategy]["currencies_in_this_stratgey"],
-        secretInfo    = secretInfo
-        )
+        productionMod       = useAPIsToPopulatePandasInfo,
+        isCsv               = isCsv,
+        list_of_currnec     = strategies[strategy]["currencies_in_this_stratgey"],
+        list_of_time_frames = strategies[strategy]["times_frame_this_stratgey_is_focused_on"],
+        secretInfo          = secretInfo)
       
       
       #initStateMaps -> 
@@ -119,20 +175,35 @@ if __name__ == "__main__":
         strategies[strategy]["currencies_in_this_stratgey"]
         )
       
-      #print(strategies[strategy]["pandas_df"])
-      #Wwait  what exactly is the data structure of stateMap? for this strategy
-      for i in  range(0, index____):
-        (strategies[strategy]["stateMap"], _ )  = update_state_map_from_new_pandas_info(
-          isDebug,
-          isCsv,                                                                  
-          strategies[strategy]["pandas_df"],
-          strategies[strategy]["stateMap"],
-          strategies[strategy]["currencies_in_this_stratgey"],
-          i,
-          False)
+
+      print("strategy", strategy)
+      #TODO clean this up so there isn't an if statement here
+      if productoinMode:
+
+         (strategies[strategy]["stateMap"], _ )  = update_state_map_from_new_pandas_info(
+            isDebug,
+            isCsv,                                                                  
+            strategies[strategy]["pandas_df"],
+            strategies[strategy]["stateMap"],
+            strategies[strategy]["currencies_in_this_stratgey"],
+            0,
+            False)
+      else:
+        for i in  range(0, index____):
+          (strategies[strategy]["stateMap"], _ )  = update_state_map_from_new_pandas_info(
+            isDebug,
+            isCsv,                                                                  
+            strategies[strategy]["pandas_df"],
+            strategies[strategy]["stateMap"],
+            strategies[strategy]["currencies_in_this_stratgey"],
+            i,
+            False)
       
 
       if isDebug : #TODO abstract this out, I do not want to be seeing this here
+        #But do not move this until you have it working properly for all stragegies, this should always be happening.
+        #This is a safe check that should always be happening in production
+        #TODO this shouldn't be abstracted out, this should be here, but run for every run.....
         strategies[strategy]["check_if_stateMap_is_correct_shape"](
           strategies[strategy]["stateMap"] , 
           strategies[strategy]["currencies_in_this_stratgey"])
@@ -159,36 +230,41 @@ if __name__ == "__main__":
                 print("\t\t\t", kkkk, vvvv)
 
 
-      #NICE, producing proper stateMap now......
+    ##[wip] This is the charts that show up in the beginning, #TODO  I want this live and showing P/L as well
+    test_show_candle_chart(strategies)
+    
 
     """ This section runs strategies....."""
     print("We have successfully made pandas df, and statmap, \n\tnow waitting to go in forever loop")
     if not isCsv: sleep(30)
     
+    #MAJOR TODO
+    #Before going into a forever loop, I should have check that
+    #The data has been made correctly (populated correctly, correct size)
+
+
     #Forever Loop
     while True:
-      index____ +=1
-      
-      #if isDebug:  print(index____, "index____ before for loop")
+      index____ +=1 #TODO I do not like the index approach. Is there another way to make this possible for debug mode?
       
       for strategy_name, dict_of_functions in strategies.items():
-        #if isDebug: print(index____, "index____ this should not change from above in for loop")
         
-        (dict_of_curr_to_pandas_df, actualChangeToPandasDict, dictOf_incomplete_data) = strategies[strategy_name]["get_new_pandas_info"](
+        
+        res___ = strategies[strategy_name]["get_new_pandas_info"](
                 secretInfo,    #For bearer Token and account info for Oanada
                 productoinMode, #Decides to use API 
                 isCsv,          #Decides to use csv
                 debugMode,      #Add print/logging statements
                 strategies[strategy_name]["currencies_in_this_stratgey"],  #Not sure why this is needed
-                strategies[strategy_name]["pandas_df"])                    #Not 
-        
+                strategies[strategy_name]["pandas_df"],
+                strategies[strategy_name]["times_frame_this_stratgey_is_focused_on"], #This shouldn't be needed, this should be filtered out in the future
+                True
+                )               
+        (dict_of_curr_to_pandas_df, actualChangeToPandasDict, dictOf_incomplete_data)  = res___
         if debugMode:  frameinfo = getframeinfo(currentframe()); print(frameinfo.filename, frameinfo.lineno, "result_of_new_pandas_info", dict_of_curr_to_pandas_df, actualChangeToPandasDict)
         
-        #TODO
-        #TODO
-        #TODO
-        #Check if this dict was populated
-        #If it was, check if we hit limit order/exit/stop losss
+        #if an upadte actually happened in pandas df then
+        #check if we hit limit order/exit/stop losss
         #if len(list(dictOf_incomplete_data)) > 0:
           #I need to check all current orders I am in
           #Check if my stop loss level was ever hit below
@@ -207,44 +283,33 @@ if __name__ == "__main__":
         #TODO take this if statement out, it bloats this area
         
         if actualChangeToPandasDict:
+            #Update pandas df
             strategies[strategy_name]["pandas_df"] = dict_of_curr_to_pandas_df
             
-            if isDebug: #Can I abstract this out, I don't want to see these 4 lines of code here 
-              frameinfo = getframeinfo(currentframe())
-              print(frameinfo.filename, frameinfo.lineno,
-                    "before statemap for", 
-                    strategy_name, strategies[strategy_name]["stateMap"]['15min']['EUR_USD'])
-
             #Update StateMap off new data
-            #TODO rename isSaucy, I do not like it, I think it is another for isSuccess
-            #Probably should throw an error
+            #isSaucy === isSuccess #TODO can I get rid of isSaucy?
             (strategies[strategy_name]["stateMap"], isSaucy) = strategies[strategy_name]["update_state_map"](
                         isDebug,
                         isCsv,
                         dict_of_curr_to_pandas_df, 
                         strategies[strategy_name]["stateMap"],
                         strategies[strategy_name]["currencies_in_this_stratgey"],
-                        index____
+                        index____ #If using a csv file we actually index throw the pandas df
                         )
-            if isDebug:
-              frameinfo = getframeinfo(currentframe())
-              print(frameinfo.filename, frameinfo.lineno,
-                    "after statemap for strategies[strategy_name][stateMap][15min][EUR_USD]", 
-                    strategy_name, strategies[strategy_name]["stateMap"]['15min']['EUR_USD']
-                    )
 
-
-            #
-            #Decide to make a new trade based off updated stateMap
-            #
             
-
-            ##TODO more logic for exitting trades, especially stop losses
-            ##And info about current prices
-            ##Might need to pass the pandas df in
-            ## or some other logic 
-            #The return in tuple (dict , bool, bool)
+            ##TODO more logic for exitting trades, especially stop losses, And info about current price 
+            """ 
+            #Now that we updated the statemap, we see if we need to excute a trade
+            Decide to make a new trade based off updated stateMap
+            
+            Returns: triple (dict , bool, bool)
+              - dict: key = timeframe and value list of 
+              - bool: let's us know if a trade should be made
+              - bool: let's us know if an exit trade signal was found.
+            """
             (tradesToMake, decideToMakeTrade_, decideToExit) = strategies[strategy_name]["deciding_to_make_trade"](
+                        deciding_logger,
                         strategies[strategy_name]["stateMap"],
                         strategies[strategy_name]["times_frame_this_stratgey_is_focused_on"],
                         isDebug,
@@ -267,11 +332,12 @@ if __name__ == "__main__":
               #Ideally A json, that just keeps a log of what is happned
               #Something that is easily analyze-able via pandas and note book
               #That can be written to file
-              #   
-            # if len(tradesToMake) != 0: #TODO remove ? Old code I am not sure if I need
-            #   strategies[strategy_name]["trades_I_decided_to_make"].append(tradesToMake['trades_to_enter_singal']) 
+              # Basically log file for trades, for everything for seperate things.   
+              # if len(tradesToMake) != 0: #TODO remove ? Old code I am not sure if I need
+              #   strategies[strategy_name]["trades_I_decided_to_make"].append(tradesToMake['trades_to_enter_singal']) 
 
               (orders_made, trades_to_make_dict) = strategies[strategy_name]["make_orders"](
+                          attempting_logger,
                           isCsv,
                           decideToMakeTrade_,
                           tradesToMake, #<time <"decidetoMake" : [(currencies and stuff)]>>
@@ -286,8 +352,7 @@ if __name__ == "__main__":
                           strategies[strategy_name]["curr_trades_I_am_in"]
                           )
 
-            #Exit trades
-            #Todo this should have a stop loss element to it
+            ##Exit trades #TODO this should have a stop loss element to it
             if decideToExit:  #and if_Iam_in_a_Trade:
               if isDebug: print("decideToExit ?", strategies[strategy_name]["curr_trades_I_am_in"])
               result_from_exit_orders  = strategies[strategy_name]["proccess_orders_to_exit"](
@@ -323,6 +388,14 @@ if __name__ == "__main__":
 
       if isCsv: printResults(isDebug, index____ , strategies)
       if not isCsv: sleep(1*60)
+      showTradesIn(trades_logger, strategies)
+
+
+
+# fig_for_stats, axs_for_stats = plt.subplots(amount_of_graphs+1)
+
+if __name__ == "__main__":
+    main()
 
 
 

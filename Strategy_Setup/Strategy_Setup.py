@@ -12,8 +12,9 @@ from   time import sleep
 import os
 import sys
 import re
-###
-## Import my local files
+
+##################################################
+## Import my local files below
 from Account_Info_Setup import *
 
 
@@ -29,6 +30,11 @@ from DecideToMakeTrade.DecideToMakeTrade   import *
 from MakeTrades.MakeTrades                 import *
 from ProccessTradesMade.ProccessTradesMade import *
 from ExitTrades.ExitTrades                 import *
+
+#Kucoin imports
+from API_calls.Kucoin.Kucoin___            import *
+from UpdatePandasDf.Kucoin.UpdatePandasDf  import *
+# from UpdatePandasDf/Kucoin/UpdatePandasDf.py
 
 
 
@@ -96,12 +102,75 @@ def makeStrategies():
             #TODO make sure these time match what they are being looked up as
             "curr_trades_I_am_in" :  defaultdict(lambda: defaultdict(list)),
             
-            # {
-            #   "15min" : defaultdict(list),
-            #   "30min" : defaultdict(list),
-            #   "60min" : defaultdict(list),
-            #   "240min":  defaultdict(list),
-            #   }, #TODO unHardCodeThis/ time frame, that should come in the auto_
+
+            "list_of_results_from_orders_this_is_test" : [],
+
+            #This part will be majorly revised once risk management is involed
+            "proccess_orders_to_exit": proccess_orders_to_exit_exit_trades_for_correlated_movements_only,
+
+            "update_currOrders_from_exit_result" :  proccess_exits_made_return_trades_in,
+
+            "list_of_final_stats" : [],
+
+
+            #5. Track/manage trades
+                #a. manuel stop losses
+                #b. Basically stop loss? but what other risk management strategies should be involved?
+                #c. Also there needs to be a meta risk management for strategies involved
+
+            #TODO I think leaving the list of optimized values here might not be bad
+            #Stop loss values
+            #Limit order Values
+
+
+        },
+        "henksi_3_currencies_move_together_crypto" : {
+
+            #Harded Coded Currency Pairs this strategy trades #This may need to change for strategy using multiple exchanges
+            "currencies_in_this_stratgey" : ["ETHUSDTM",  "XBTUSDTM", "ADAUSDTM", "DOTUSDTM","LTCUSDTM"],
+            "times_frame_this_stratgey_is_focused_on": [15], 
+            
+            
+            #1. Init pandas df and statemap
+            "init_pandasDf"  : init_pandas_df_kucoin,
+            "initStateMaps" : init_stateMap_for_only_correlatred_trades,
+            #TODO make a test that ensures the state map is correctly made
+            "check_if_state_map_init_correctly": None,
+            "check_if_stateMap_is_correct_shape": check_if_stateMap_is_correct_shape, # TODO 
+
+
+            #2.a Update pandas next iterOfPandas
+               #function should take a if_a_test,
+               #TODO index for backtesting with csv  file
+            #This function should return (dictionary,)
+            "get_new_pandas_info"     : init_pandas_df_kucoin, #(isProd, isCsv, currnecies, currentPandasDf)  
+            
+            "check_if_new_pandas_info": check_if_new_pandas_info_kucoin,
+
+
+            #2.b Update next iteration of stateMap State
+            "update_state_map": update_state_map_from_new_pandas_info, #(dict_of_new_pandas_result, stateMap )
+
+
+            #3. Logic to decide on making a trade
+            "deciding_to_make_trade"   : deciding_to_make_trades_based_on_updated_stateMap_correlated_moves_only, #This should always return a (dict, bool)?
+            
+            
+            "log_trades_I_decided_to_make" : [],
+            "trades_to_make"       : defaultdict(dict),
+
+            #TODO MANAGE RISK? Not sure how this should be involved?
+            
+            
+            #4. Do what it needs to from that decision
+            "make_orders" : make_orders_for_correlated_movers_only_strategy,
+
+
+            #Proccess the results from making orders
+            "proccess_orders_made" : proccess_orders_made_return_trades_in,
+            #TODO make sure these time match what they are being looked up as
+            "curr_trades_I_am_in" :  defaultdict(lambda: defaultdict(list)),
+            
             
             "list_of_results_from_orders_this_is_test" : [],
 
@@ -124,4 +193,5 @@ def makeStrategies():
 
 
         },
+
     }

@@ -384,10 +384,12 @@ class TradeData(KucoinFuturesBaseRestApi):
             'symbol'  : symbol,
             'side'    : side,
             'leverage': lever,
+            'type'    : 'market',
             'size'    : 1,
-            'type'    : 'market'
+            'quantity': 1
 
         }
+        print("I Should see my print")
         if not clientOid:
             clientOid = self.return_unique_id
         params['clientOid'] = clientOid

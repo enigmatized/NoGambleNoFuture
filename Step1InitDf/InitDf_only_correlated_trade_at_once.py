@@ -20,14 +20,23 @@ from urllib.error import HTTPError
 ### ALL THESE FUNCIONS ARE RELATED TO THE IniitDF SECTION IN MAIN FUNCTION
 #THIS Code block is for getting data from the exchange and setting up the first call and others calls
 
-#TODO  modify for candle count and grandulatiry
-#TODO better documentation
-#THIS SHOULD NEVER throw an error and error out
-#Not stop the program
-def getCandles_aka_callToUpdateInfo(currency, count = "3", bearerToken = None, accountNum = None):
+def getCandles_aka_callToUpdateInfo(currency, 
+                                    count = "3", 
+                                    granularity = "H4", #TODO add logic to decide M15/M30/H1/H4
+                                    bearerToken = None, 
+                                    accountNum = None):
+    
+    #Just throw an error if no BearerToken in provided
     if bearerToken == None or accountNum == None : raise ValueError('Calling the APIs without token/account info is a very bad thing, are you really prepared for this?')
+    
+    
+    #if type(granularity) == int : #TODO probably a good idea to add this to currency
+    d = {15: "M15", 30: "M30", 60:"H1", 120 : "H2", 240: "H4"}
+    granularity = d[int(re.search(r'\d+', granularity).group())]
+
+
     try:
-        r = requests.get('https://api-fxtrade.oanda.com/v3/instruments/'+currency +'/candles?count='+ count +'&price=M&granularity=M15',
+        r = requests.get('https://api-fxtrade.oanda.com/v3/instruments/'+currency +'/candles?count='+ count +'&price=M&granularity='+ granularity,
             headers= { 'Content-Type': 'application/json','Authorization': 'Bearer ' + bearerToken} #Correct this to be read from file
             )
         r.raise_for_status()
@@ -44,44 +53,48 @@ def getCandles_aka_callToUpdateInfo(currency, count = "3", bearerToken = None, a
 
 #Note 15m * 16 = 4hrs 
 
-def firstCallToInitState(currency, secretInfo): 
+def firstCallToInitState(currency, time_frame, secretInfo): 
   #Special case to start the state,
   #This should not return a tuple object and I call it here
   #I should have a check or throw an error
   #If this is bad then the entire project is bad
-  return getCandles_aka_callToUpdateInfo(
+  print("\ntimeframe\n", time_frame, currency) #TODO delete
+  (result, was_a_success) = getCandles_aka_callToUpdateInfo(
      currency,
-     "80",
+     "80", #Number of candles
+     time_frame,
      secretInfo["bearerTokenOanda"],
-     secretInfo["accountNumOanda"])[0]  #Why is this [0], what is going here?
-
+     secretInfo["accountNumOanda"])
+  if was_a_success: return result
+  else: raise Exception("Error in firstCallToInitState, to init the ondada pandas df server failed to get into to finish proccess")
 
 
 
 """ """
-def first_call_to_get_data_from_exchange(productoinMod, currencys_, secretInfo):
+def first_call_to_get_data_from_exchange(productoinMod, currencys_, time_frame, secretInfo, isDebug_ = False):
   if productoinMod:
     resDict = {}
     for currency_pair in currencys_: 
-       print("currenc", currency_pair,resDict )
-       resDict[currency_pair] = firstCallToInitState(currency_pair, secretInfo)
-       print("currenc", currency_pair,resDict )
+       if isDebug_: print("currenc with entire dict", currency_pair,resDict )
+       resDict[currency_pair] = firstCallToInitState(currency_pair, time_frame, secretInfo)
+       if isDebug_:  print("currenc", currency_pair,resDict[currency_pair] )
     return resDict
   else : 
     #TODO implemnt your Test
     return {}
 
 
-def setup_pandas_df_forall_currencies(productoinMod, diction, currencies_if_not_production):
+def setup_pandas_df_forall_currencies(productoinMod, diction, currencies_if_not_production, ifDebug_ = False):
+  if ifDebug_ : print("In setup_pandas_df_forall_currencies, \tthe data structure named diction: ", diction, "\n\tand currencies_if_not_production", currencies_if_not_production)
+  
   if productoinMod:
-    print("SHould not be getting here atm")
-    print(diction)
-    resD = {}
-    for currency, json_response_from_api_resquest in diction.items(): resD[currency] = createPandasDfFromAPI(json_response_from_api_resquest)
+    resD = defaultdict(dict)
+    for time_frame, dict_currency_to_api_responses in diction.items(): 
+      for currency, json_response_from_api_resquest in dict_currency_to_api_responses.items(): 
+       resD[time_frame][currency] = createPandasDfFromAPI(json_response_from_api_resquest)
     return resD
-  else : 
-    return getPandasFromCSVFiles(currencies_if_not_production) 
-
+       
+  else : return getPandasFromCSVFiles(currencies_if_not_production)  #TODO this will have to change because I am changing the data structure for pandas
 
 #This function is tricky
 #In the future I might want to think about modifying pandas dataframes to meet the conditions of certain strategies
@@ -159,34 +172,27 @@ def make_dict_of_pandasDfs_the_same_for_backtesting(pandasDf):
      
 
 def createPandasDfFromAPI(json_of_currency):
-  # print("-----------------------------")
-  # print(json_of_currency)
-  ddd     = prep_json_from_API_for_pandas(json_of_currency)
-  mainDf  = pd.DataFrame(ddd).T
-  mainDf['heikin_ashi_open']  = 0.5 *( mainDf['close'].shift(1) +mainDf['open'].shift(1) )
+
+  dict_time_to_json_info_canldes     = prep_json_from_API_for_pandas(json_of_currency)
+
+  mainDf                             = pd.DataFrame(dict_time_to_json_info_canldes).T
+  mainDf['heikin_ashi_open']  = 0.5 *( mainDf['close'].shift(1) +mainDf['open'].shift(1) ) 
   
   #Get rid of the first value that is NA as a result of the above operation
   mainDf       = mainDf.tail(-1) 
-  final_mainDf = mainDf.head(-1)
-  
-  # mainDf.head()
-  # mainDf.tail()
-  # print("----- createPandasDfFromAPI---")
-  # print(final_mainDf)
-  return final_mainDf
+
+  return mainDf
 
 
-def prep_json_from_API_for_pandas(json_Instrument_Info):#Each function/definiton will be different
+#TODO there should be a unit test for this
+def prep_json_from_API_for_pandas(json_Instrument_Info):
         innderDict = defaultdict(dict)
         
         inst    = json_Instrument_Info['instrument']
         grans   = json_Instrument_Info['granularity']
         candles = json_Instrument_Info['candles']
-        time_to_subtract = datetime.strptime("4:00:00", "%H:%M:%S")
-        # unixTimeConverter = lambda x : (datetime.fromtimestamp(x)).strftime('%Y-%m-%d %H:%M:%S')
-        # unixTimeConverterNoDateJustTime = lambda x : (datetime.fromtimestamp(x)).time()
+        #time_to_subtract = datetime.strptime("4:00:00", "%H:%M:%S")
 
-        #print(time_Of_this_Candle)
         for x in candles:
             if x["complete"]:
                 strObjDate = x["time"]
@@ -214,32 +220,38 @@ def prep_json_from_API_for_pandas(json_Instrument_Info):#Each function/definiton
 def init_pandasDf_henksi_multiple_time_frames_but_trades_made_on_time_frame(
       productionMod, 
       isCsv,
-      currencys_,
+      list_of_currnec,
+      list_of_time_frames = [],
       secretInfo = None):
+    #This is a special function in the sense it creates the pandas df from scratch
+    #AKA the beginning state of the pandas
 
+    #THIS IS A TWO PART FUNCTION
+    #FIRST CALL THE API
+    #THEN CREATE THE PANDAS DF FROM
+    #THE API JSON
 
-    #WHAT THE FUCK?
-    # if not productionMod :  currencys_      = ["GBPUSD","EURUSD"] #This is confusing as shit, why do I have this?
-    # if productionMod : currencys_ = optimizedValues.keys() 
-    
-    #IniitDF # This return a empty JSON if not
-    if not isCsv:
-       dict_of_currency_to_json_response_from_api_resquest = first_call_to_get_data_from_exchange(
-          productionMod, 
-          currencys_,
-          secretInfo)
+    if isCsv: 
+      dict_of_currency_to_json_response_from_api_resquest = {}
     else : 
-       dict_of_currency_to_json_response_from_api_resquest = {}
-    #Actuall I think this is good
-    #Even for multiCurrency time frames
-    #It is a good move to move this to 
+
+      d_time_frame_currency_json = defaultdict(dict)
+      for time_frame in list_of_time_frames:
+
+
+        d_time_frame_currency_json[time_frame]   = first_call_to_get_data_from_exchange(
+            productionMod,
+            list_of_currnec,
+            time_frame, 
+            secretInfo)
+      
     dict_of_currency_to_pandas_df     = setup_pandas_df_forall_currencies(
-      (not isCsv), 
-      dict_of_currency_to_json_response_from_api_resquest,
-      currencys_)
-    
-    
+      productionMod, 
+      d_time_frame_currency_json,
+      list_of_currnec)
+
     return dict_of_currency_to_pandas_df
+
 
 def init_stateMap_henksi_multiple_time_frames_but_trades_made_on_time_frame(
       debugMode, 
