@@ -1,0 +1,22 @@
+
+
+
+Log of updates/changes
+
+
+5/14/23 --  
+            0. 
+
+5/13/23 -- 
+           0. Created files BackTestNotes.txt to track eveything better
+           1. Change the tracker in the statemap to track
+                price
+                Unix time 
+                and human readable time
+           2. Make a permenant log of decided to make trade signals
+           3. Make a permenant log after a trade has been made
+           4. Make it so I match trades exited with trades made
+           5. Have it print out the results of orderes decided to make
+           6. Ideally I want to match order made with orders exited
+                so I can print that as one singal object
+

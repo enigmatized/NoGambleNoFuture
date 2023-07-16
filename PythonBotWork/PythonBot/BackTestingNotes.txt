@@ -1,0 +1,140 @@
+
+
+
+0. Debug mode is set true
+
+
+Part 1. Setup before entering the while/forever loop
+    A. TODO move this out of the mainFile becuase it sorta is a pain to do look at
+
+
+Part 2. FOREVER LOOP
+
+WHILE 
+    for loop on stragegies
+
+        1. get_new_pandas_info
+            A. Live, call API   returns (ifUpdated, whether updated)
+            B. Returns the Same (PandasDf, True)
+        
+        So on backtest the back returns true so
+        2. if change to pandas .... NEW INFORMATION!
+            make pandas_df = pandas_df
+            sooo During the backTest nothing really happens here
+            
+
+            
+            3. Update State Map 
+            --- oh shiitt loooks like a huge issue here
+            -- I have two different functions here
+            -- That look like they have been mized up
+                !!! My biggest issue is the time flag,
+                !!! this timeframe setting seems weird and might cause problems for live testing
+
+                A.Live -- Note 100% the pandas works as it should
+                B. BackTesting 
+                    a. this is where it uses index
+                    b. Basically makes a 1 
+                        row pandas df from the index
+                        i like
+            
+            4. deciding_to_make_trade based off updated stateMap
+                A. For backTesting and Production this function is the same
+                B. This just returns a 
+                    <dict key:time,
+                     value: 
+                        <dict keys:
+                            trades_to_enter_singal ,
+                            exit_trade_singal,
+                                value: lists>>
+            5. Log trades decide to make on
+            6. If orders were decided to be make, make order
+                7. Make Orders function
+                    --- So there is an issue here
+                    Live trading returns 
+                    A. Live trading
+                    B. Back testing
+                8. Proccess orders made
+                    A. Live tradine
+                    B. Back testing trading
+                9. 
+
+
+            
+            
+            6.  
+
+
+
+So there is a lot of proccess and sub proccesses going on here, for back testing and living trading
+- There is trade decision to make trade
+- Then there is making a trade
+-- Note the information the decision to make the trade was on
+-- May change a lot from the time the order is excuted and could be so different that 
+-- it wouldn't be a decision I would have made the decision
+-- So I should be logging that to.
+-- 
+
+
+HOW SHOULD THE DATA MODEL BE FROM 
+    1. DECIDE To order
+        A.
+    2. Make order
+                logging_result_from_trade_made= {
+                      'json_response_if_api_call': a,
+                      'wasASuccesfulOrder': b,
+                      'currency____' : currency__,
+                      'amout_I_beleive?' : amountToKnowLater,
+                      'price_decsion_to_make_trade_was_based_on': curPrice_,
+                      'myTime_decsion_to_make_trade_was_based_on': myTime,
+                      'unixTime_decsion_to_make_trade_was_based_on': unixTime,
+                      'timeStampFromDecisionToMakeTrade' : timeStamp,
+                      }
+    3. curr in Orders
+        A. defaultDict(lambda: defaultDict(list(logging_result_from_trade_made)  ))
+        B. Should add more data or make it a dictionary
+    4. exit orders
+        A. 
+    5. PRocceesing order trades
+        A. Returns a list of dictionary of trades exit_trade_singal
+            a. Why is this a list and not a dictionary?
+    
+
+    666. 
+    FINAL this list of exited orders, this might be the most import
+
+        
+
+
+
+
+#TODO
+# While times on "time list of times" 
+    #So  I have this in stateMap update 
+    #And I have this in decide to make trades
+    #I think I only need this in decide to make trades
+
+
+
+1. So I have the pandas df, iterateing via a index
+    A. WHat is the best place to update this index?
+        a. I think everytime enetering the while loop
+            i. This may change when I turn everything to work on its own threads
+
+2. Get new panas df
+    A. How does this differ from live trading and back testing
+        a.  
+
+2. How do I collect the signals for everything?
+    A. Decide to make trades
+        a. For actual use and
+        b. Logging
+    B. 
+
+So I have a logging
+
+
+5
+6
+7
+8

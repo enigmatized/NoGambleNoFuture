@@ -1,0 +1,241 @@
+
+
+
+
+***#1 For Sunday
+        #OH FUCK I THINK WHAT IS HAPPENING IS EITHER THE TIME SCALE IS OFF
+        #OR THAT the update on here is slow, which would be totally fucking gay
+        #That either means I have to create a function that creates this more me
+        #I just realized something, I wonder if... My 240min time frame is.... fucked up
+        #Because my pandas df for that time frame
+        #Is gonna look different than the 15min
+        #I can re-create the 15min for the 240, but I am fucked because I am useing the 15min instead of the 240 candles....
+        #Fucking offffff
+        
+        #I think apart of the solution is when calling the Oanda api
+        #Is asking for the granularity
+        #Then you will have to create an pining function that
+        #collcets data at a faster rate
+        #I think I may need to go get a legit for pay data feed from an exchange
+        #Like directly going through the CME
+        #This data maybe useless for most intents and purposes.....
+        #This is fucking gay
+        #WHere would I go else
+        #I think I should be fine
+        #This actually may work to my advatage knowing that the data is wonky
+
+
+
+
+
+
+
+
+
+
+
+
+What other strategy should I try next?
+It is very similiar to above, but I want to work on
+--- Haskell Crude trading tool
+--- S&P trading strategy that rides the coat tails off if sectors are doing well. 
+--- Basically a correlation strategy that only trades after 10am - 2pm
+--- Options scraping somehow?
+--- Long Short strategy on something/I feel like this would be a great crypto strategy
+--- Morning Mover Strategy, try to pick up the morning movers, like some form of scalping
+    ---This morning mover in scan in the morninig, then watch the high probability to make big moves
+--- I need something that works with treasuries and currencies
+--- A low on the day/options scalping on vxx
+
+
+
+
+5/24/23
+# TODAY TODO
+Compare/graph kucoin futures with spot
+if it makes sense
+then make a setup functions to add it 
+#I think the goal will be to setup the init pandas and get data from api/also send money to kucoin account
+#then try to get it trading today or tomorrow
+
+
+
+# FUTURE TODO,
+1. make it super easy to deploy to google colab because that is where I run it.
+2. asbtract the data
+3. Have a switch that is designed for running on notebook, server, locally
+     A. This means I have to modify the pandas_dbs, if they are off, I need to recreate them
+         In this way I can run my strategy on my local computer, and when I turn it off, and when I turn it back on, it is still running my strategy and because right now its on 4hr time tracking and a green streak can last a day, I should be doing this for my local machine
+     B. I think I need to create a stats page for the app, then have ways of seeing that and controling that
+     C. 
+4. Make a logging/class object, that can be carried around, rather than a debug flag with a bunch of if statements everyt where
+Make life on yourself:
+# https://github.com/Kucoin/kucoin-futures-python-sdk
+
+
+https://colab.research.google.com/drive/1ZSTZJF1v09v7_nRdTCzic4WUMrLngZYX?authuser=2#scrollTo=TN5o_sLaSJk4
+
+#I am realizing orderbook trading really needs a websocket, onanda won't really work
+#kucoin's version probably won't work because you are trading their futures
+#But you want to be trading there 
+
+#So there are two different tasks that sorta interact
+#1. Trade kucoin futures -- This should be easy
+#2. Add live visual tracking -- Which could be complex and most awesome addition, may lead to gui controls
+#3. 
+
+
+
+
+
+5/23/23 Tuesday
+# SOme shit is fucked up, it looks like my pandasdf is fucked up.
+
+
+
+dict_of_currentPandasDf[currenC].tail(1)                        close     open     high      low  ...      time estTime timeOnly heikin_ashi_open
+2023-05-23 15:30:00  0.90104  0.90098  0.90149  0.90092  ...  11:30:00     NaN      NaN         0.900655
+
+Which open and high should never be NA, unless that is not getting removed from
+
+#Also fix it so that if the internet goes out that it bounces back easily
+#This I believe involves think about the time of the pandas df and making sure that doesn't go out of sync
+#And if it does, something, not sure what, should be done
+__________________
+# I am throwing away the last row in my pandas dict
+# Because I am par from updating it looks like
+
+
+## Looks like I have to take the time to do this properly
+## For this is should be rather simple
+## If the row of tail is older, and it is a complete then update.
+# THis weird tail shit I have no idea what is going on, especially if pandas ever gets moved around again
+# not sure what to do here?
+# Other than figure out why I am missing data from the original init pd request
+# Then figure out why ever iteration is saying last state is different from current state and triggering a trade at everyh update.
+# Very strange
+
+
+
+# SOme random thing I want to add
+# If I zee a higher z-score and -zscore as vol, then I want to make crypto trades
+
+
+
+#TODO holly fuck statemap is instiliazed wrong. It autmatically makes the first color green
+#And green and red are fover decided.
+#THe issue is that red is hardcoded as short.
+#But it could be an upward movement, but make a short.....
+
+
+
+# This serves as an affirmation that individuals with limited resources, basic  statistics and risk management principles can make money.
+
+This is under construction.
+Didn't mean to post this yet.
+
+So far:
+1. Can backtest strategy with
+2. Can simulate trading
+3. Can do live currency
+4. Can run multiple strageies at a time
+
+
+5.   TODO: dashboard to track live trading stats
+6.   TODO: optimization on limit orders
+7.   TODO: python is not the right code for this project, move it over to something else
+
+8.   Coming Soon: some forex exchange do not allow you to be in positions and have multiple limit orders(I believe to prevent spoofing). So I have to create a limit service. 
+9.   Coming Soon: Instructions on how to use, how to automate
+10.  Coming Soon: Settings to optimize you strategies values for back testings
+11.  Coming Soon: Add a notebook version to run on google :colab for 8hrs at a time for free
+
+
+
+Creating a trade bot is a pain in the ass. 
+You have to first have an idea, get some idea, back testing that idea, then build something to trade that idea.
+I am glossing over the fact that backtesting may not represent actual live trading results.
+So then you may want to simulate the idea.
+Then finally, if you are making momey on the simulation, put real captial to work.
+Then there is the maintence of said worker.
+
+This tool is meant to make the above proccess easier.
+Easy backtesting of ideas, simulating trades, running a strategy on multiple exchanges, managing risk.
+A lot of work to do, but this is the start.
+
+
+
+#### Instructions to run on google colab
+
+Step 1: Download repo
+! git clone https://github.com/enigmatized/NoGambleNoFuture.git
+
+Step 2: import main 
+from NoGambleNoFuture.Main import *
+
+Step 3: add your bearer token and account info to a json package outside the NoGambleNoFuture
+
+step 4: configure your options of how you want to run.
+
+step 5: let it rip
+main()
+
+
+Note that the benefit of google colab is that they give you free computing power to run for 8-12 hours. There are limits, but this runs under those limits.
+
+
+
+
+
+FUTURE TODOS
+
+
+1. Push to github before I lose everything.....
+2.  So now I think the priority is to get good way of visually know whats going on during live runs
+    THis output is pretty herendous
+    Also you are starting the engage in behavior that means that you are choosing python for the long haul?
+    Maybe, we will see.
+    ANyway things I want to visualize
+    a. P/L
+    b. Trades in
+    c. 
+
+2. start running my bot on the ec2 instance
+3. Start putting its stats in graphs and hosting that on the web
+
+4. Do some minor data science work, and add it to the strategy, ideally something with
+            i. rate of change
+            ii. z-score of of some or delta or (range?.... I think ranges only work with websockets with live data, which is pretty shitty because that is what I am aiming for)
+5. Beginnning of Dashboard: Orderbook scraping showing on a live chart/#limit order watching
+6. Stop Losss bot
+7. Re-structuring the code so that the updates happen based on updates to the to pandas db
+            i. Which is really just based off of updates from the api that go off in 30 second-ish timers
+
+8. When it gets out of sunce, 
+
+10. Multiple logging files, an everything logging file then specifc service logging
+11. Convert Print statements to log statements
+
+12. Have the website show the stats from the live bot running.
+    A. It should be able to post
+        a. Candles/bar charts
+        b. P/L
+        c. Trades in. .... Basically dashboard idea.
+
+
+13. Code clean up/code freeze, this forces us to just work on maintaining/debuging/testing
+
+14. When the file closes, makes sure there is a print to catpure the last issues.
+
+15. Schedule a meeting with Andre to ask about
+    a. How to make it so I am not passing out so many variables, ie to make some variables global.
+        i. Like debug, logging
+    b. 
+
+--------------
+# Other stuff that should not go here
+5.post your github haskell expeirments
+6.Go through mind map I made for BlockApps
+7.Find the optimized values for stop losses, with what you are doing for your currency trade
+8.Study ?--> not sure what, probably just reading on Merkle Tries
+
