@@ -4,7 +4,7 @@
 #include "DataCleaner/json.hpp"
 
 #include "DataCleaner/JSONhelpers.h"
-#include "APIcalls.h"
+#include "ExchangeCalls/APIcalls.h"
 
 
 //Below was added to make a list of json then eventually save that to file
@@ -35,6 +35,16 @@ int main()
     //Setup the header for the API call    
     std::string oauthBearer = "Authorization: Bearer " + bearer;
 
+
+    //Read json from file, 
+    //each  json  is a look up of
+    // key :: string == "USD_JPY07:12:13"
+    // value :: Tuple (float, float) == (mean , standard deviation) == (.003, .0005)
+
+    std::ifstream inputfile1("OnStart/Data/Oanda/EUR_USD_M5_price_delta.json");
+    json EurUsdM5PriceDeltaMeanAndStdDev;
+    inputfile1 >> EurUsdM5PriceDeltaMeanAndStdDev;
+    inputfile1.close();
 
     //Container for respose data
     std::vector<json> arrays_of_order_books;
