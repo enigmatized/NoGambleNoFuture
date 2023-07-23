@@ -41,10 +41,11 @@ int main()
     // key :: string == "USD_JPY07:12:13"
     // value :: Tuple (float, float) == (mean , standard deviation) == (.003, .0005)
 
-    std::ifstream inputfile1("OnStart/Data/Oanda/EUR_USD_M5_price_delta.json");
-    json EurUsdM5PriceDeltaMeanAndStdDev;
-    inputfile1 >> EurUsdM5PriceDeltaMeanAndStdDev;
-    inputfile1.close();
+    std::ifstream inputfile1("OnStart/Data/Oanda/EUR_USD_M5_price_delta.json"); //TODO read each file name
+    json EurUsdM5PriceDeltaMeanAndStdDev; //TODO then from file name parse out the currency pair and the granularity
+    inputfile1 >> EurUsdM5PriceDeltaMeanAndStdDev; //TODO then create the lookup table
+    inputfile1.close(); // Also abstract this out to one function call that takes no arguements
+    
 
     //Container for respose data
     std::vector<json> arrays_of_order_books;
