@@ -11,3 +11,5 @@ size_t WriteCallback(char* data, size_t size, size_t nmemb, std::string* buffer)
 json fetchData(const std::string& oauthBearer);
 
 json fetchMarketCandles(const std::string& oauthBearer, const std::string& currency, const std::string& count, const std::string& granularity);
+
+json makeMarketOrder(const std::string& oauthBearer, const std::string& currency, const std::string& count);

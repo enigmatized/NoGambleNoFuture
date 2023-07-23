@@ -15,6 +15,10 @@
 
 3. What are the fractal dynamic of 1min candles after a 5min 3sd> move. How can you use that info to optimize you exit strategies?
 
+4. Open and close VS high and low z-score
+
+
+
 
 
 

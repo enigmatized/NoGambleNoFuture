@@ -21,7 +21,7 @@ Part 2. Add in trending following strategy.
 
 
 ### To Run
-`g++ -std=c++17 main.cpp ExchangeCalls/APIcalls.cpp DataCleaner/json.hpp -lcurl -o my_program`
+` g++ -std=c++17 main.cpp TradeManager/OandaManager.cpp ExchangeCalls/APIcalls.cpp DataCleaner/JSONhelpers.cpp DataCleaner/json.hpp -lcurl -pthread  -o my_program;`
 
 
 <img src="FLowAsOfNow.png"/>
