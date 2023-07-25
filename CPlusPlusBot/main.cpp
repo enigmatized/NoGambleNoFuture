@@ -6,7 +6,7 @@
 #include "DataCleaner/JSONhelpers.h"
 #include "ExchangeCalls/APIcalls.h"
 #include "TradeManager/OandaManager.h"
-
+#include "ExchangeCallManager/OandaExchangeManager.h"
 
 //Below was added to make a list of json then eventually save that to file
 #include <vector>
@@ -88,6 +88,8 @@ int main()
    
 
     //API Setup tokens for Onanda
+    //Todo make this into a function that runs on the startup 
+    //Of the Oanda exchange
     std::ifstream inputfile("../APITokens/bearTokenAndAccountInfo.json");
     json jsonData;
     inputfile >> jsonData;
