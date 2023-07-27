@@ -3,7 +3,15 @@
 
 #
 
-
+I think the most important thing I need to look into is where is the money being made from?
+Is it small gains, because this mean is generally positive?
+Or are the gains really made from the outlliers?
+Also if the focus is attaing outliters vs trying to attain large gains, then that majorly changes the strategy.
+Also there should be a focus on looking at trades that I shouldn't enter. So it goes both ways.
+Model to avoid trades.
+Model to look see if this is a high probability of the type of trade that make money.
+But before making those models I have to figure out where the money is being made.
+Also I need to consider transaction costs, which in Oanda I think are very small.
 
 
 
