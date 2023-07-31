@@ -1,3 +1,21 @@
+1. This weekend I would like to get something functioning in the correct format
+
+Wow so there is still a lot of work to do.
+
+- Get the strategy manager to read its files and hold them in memeory for now.
+
+- Get the data manager to send its own information to a strategy manager
+    -- Note I think I need to update that with a single thread execution or?
+    --Actually I can keep it the way I have it, but just send that off on a thread.
+    --The return type doesn't matter to the excange excution manager
+
+- get the strategy manager to send its information over to trade manager 
+- Then make a trade based off of that
+- Then implement the exit strategy part once all that is done.
+
+
+b. I am realizing its really important that I touch this project, specifically code some lines of c++ everyday or I just lose what I learnt.
+
 ### Work in progress
 still in more of design phase, but just beginning to implement.
 
@@ -25,3 +43,9 @@ Part 2. Add in trending following strategy.
 
 
 <img src="FLowAsOfNow.png"/>
+
+
+### possible renaming, refactoring 
+Thre more I work on a project, the more I have a clear understanding layout.
+
+1. Change Trade Manager to TradeAndRiskManager.

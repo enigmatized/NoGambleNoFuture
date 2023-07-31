@@ -1,3 +1,7 @@
+#ifndef OANDAMANAGER_H 
+#define OANDAMANAGER_H
+
+
 #include <list>
 #include <map>
 #include <tuple>
@@ -27,4 +31,8 @@ public:
     void updateTradesToMake(std::string, int , std::string) ;
 
     void manageTrades();
+
 };
+
+
+#endif //OANDAMANAGER_H

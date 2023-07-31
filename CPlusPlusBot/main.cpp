@@ -7,6 +7,7 @@
 #include "ExchangeCalls/APIcalls.h"
 #include "TradeManager/OandaManager.h"
 #include "ExchangeCallManager/OandaExchangeManager.h"
+#include "StrategyManager/MeanReversion.h"
 
 //Below was added to make a list of json then eventually save that to file
 #include <vector>
@@ -86,10 +87,10 @@ int getMinuteFromStringTime(std::string timeString){
 int main()
 {
    
-
     //API Setup tokens for Onanda
     //Todo make this into a function that runs on the startup 
-    //Of the Oanda exchange
+    //Of the Oanda exchange //So basically the data ExcahngeCallsManager should have this information
+    // Sounds like it would make most sense that upon creation, would load instead of this being here
     std::ifstream inputfile("../APITokens/bearTokenAndAccountInfo.json");
     json jsonData;
     inputfile >> jsonData;
@@ -105,17 +106,27 @@ int main()
     //each  json  is a look up of
     // key :: string == "USD_JPY07:12:13"
     // value :: Tuple (float, float) == (mean , standard deviation) == (.003, .0005)
-
     std::ifstream inputfile1("OnStart/Data/Oanda/EUR_USD_M5_price_delta.json"); //TODO read each file name
     json EurUsdM5PriceDeltaMeanAndStdDev; //TODO then from file name parse out the currency pair and the granularity
     inputfile1 >> EurUsdM5PriceDeltaMeanAndStdDev; //TODO then create the lookup table
     inputfile1.close(); // Also abstract this out to one function call that takes no arguements
 
+    //SETUP STRATEGY MANAGER
+    MeanReversion oandaStrategyManager;
+
+    //SETUP exchange call manager
+    OandaExchangeManager oandaExchangeManager(oandaStrategyManager);
+    std::thread exchangeCallThread(&OandaExchangeManager::mainCallLoop, &oandaExchangeManager);
+    // oandaExchangeManager.mainCallLoop();
+
     //SETUP trade managers (as of now I only have one)
     OandaManager oandaManager;
-
+    //Having it run on its own thread
     std::thread tradeThread(&OandaManager::manageTrades, &oandaManager);
-    
+
+
+
+
 
     //Container for respose data
     std::vector<json> arrays_of_order_books;
